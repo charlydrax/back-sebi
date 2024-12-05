@@ -1,12 +1,16 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 // const user = require('bdd du user');
-const express = require('express')
-const app = express()
+// const express = require('express')
+// const app = express()
 
-app.use(express.json())
+// app.use(express.json())
 
-exports.signup = (req, res, next) => {
+// app.get('/coucou', (res, req)=>{
+//     console.log("bon");
+//     res.status(200).send('envoie')
+// })
+const signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10)
         .then(hash => {
             const user = new user({
@@ -17,10 +21,10 @@ exports.signup = (req, res, next) => {
                 .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
                 .catch(error => res.status(400).json({ error }));
         })
-        .catch(err => res.status(500).json({ error }));
+        .catch(err => res.status(500).json({ err }));
 };
 
-exports.login = (req, res, next) => {
+const login = (req, res, next) => {
     user.findOne({ email: req.body.email })
         .then(user => {
             if (!user) {
@@ -45,8 +49,8 @@ exports.login = (req, res, next) => {
         .catch(error => res.status(500).json({ error }));
  };
 
- exports.getAllUsers = (req, res, next) => {
-    user.find()
-      .then(user => res.status(200).json(user))
-      .catch(error => res.status(400).json({ error }));
-  };
+const getAllUsers = (req, res, next) => {
+    res.send('salut')
+};
+
+module.exports = { signup, login, getAllUsers }
