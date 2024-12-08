@@ -2,6 +2,9 @@ const express = require('express');
 const userRoutes = require('./routes/users');
 const app = express();
 const sequelize = require('./models')
+// const sequelize = require('./models/index')
+
+
 
 sequelize.sync()
     .then(() => console.log('Tables synchronisées'))

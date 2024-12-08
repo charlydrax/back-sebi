@@ -1,27 +1,22 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// const user = require('bdd du user');
-// const express = require('express')
-// const app = express()
+const sequelize = require('../models');
+const usersData = require('../../api-users.json')
+const { Sequelize } = require('sequelize');
 
-// app.use(express.json())
-
-// app.get('/coucou', (res, req)=>{
-//     console.log("bon");
-//     res.status(200).send('envoie')
-// })
 const signup = (req, res, next) => {
-    bcrypt.hash(req.body.password, 10)
-        .then(hash => {
-            const user = new user({
-                email: req.body.email,
-                password: hash
-            });
-            user.save()
-                .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-                .catch(error => res.status(400).json({ error }));
-        })
-        .catch(err => res.status(500).json({ err }));
+    // bcrypt.hash(req.body.password, 10)
+    //     .then(hash => {
+    //         const user = new user({
+    //             email: req.body.email,
+    //             password: hash
+    //         });
+    //         user.save()
+    //             .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
+    //             .catch(error => res.status(400).json({ error }));
+    //     })
+    //     .catch(err => res.status(500).json({ err }));
+    res.send('page signup');
 };
 
 const login = (req, res, next) => {
@@ -53,4 +48,57 @@ const getAllUsers = (req, res, next) => {
     res.send('salut')
 };
 
-module.exports = { signup, login, getAllUsers }
+const test = (req, res, next) => {
+    try{
+        sequelize.authenticate();   
+        console.log('Connecté à la base de données MySQL!');
+        // console.log(sequelize.query);
+        console.log("authentifié");
+        console.log(req.body);
+        
+        usersData.push(req.body)    
+        res.status(200).json(usersData)
+        // res.status(200).send("Envoie à la BDD réussi")
+    }catch(err){
+        res.status(500).send("Erreur 500 avec sebi", err)
+    }
+};
+
+const api_users = async (req, res, next) => {
+    // Defined the models Users
+const Users = sequelize.define('Users', {
+    username: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    email: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    password: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    image_profil: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    admin: {
+      type: Sequelize.INTEGER,
+      allowNull: false
+    }
+  }, {
+    tableName: 'users',
+    timestamps: false
+  });
+  
+    try{
+        const users = await Users.findAll()
+        res.json(users);
+
+    }catch (error){
+        res.status(500).json({message: "Erreur lors de la récuperation des users"})
+    }
+};
+
+module.exports = { signup, login, getAllUsers, test, api_users }

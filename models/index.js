@@ -8,9 +8,5 @@ const sequelize = new Sequelize(process.env.DATABASE_NAME,
     {    dialect: process.env.DIALECT_DATABASE,
         host: process.env.HOST_DATABSE
     });
-// const sequelize = new Sequelize('sebi', {
-//     host: 'localhost',
-//     dialect: 'mysql'
-// });
 
-module.exports = sequelize;
+module.exports = sequelize ;
