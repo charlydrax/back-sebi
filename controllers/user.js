@@ -3,20 +3,75 @@ const jwt = require('jsonwebtoken');
 const sequelize = require('../models');
 const usersData = require('../../api-users.json')
 const { Sequelize } = require('sequelize');
+const fs = require('fs')
+const path = require('path');
+const { log } = require('console');
+const filePath = path.resolve('api-users.json');
 
+const home = (req, res, next) => {
+
+    res.status(200).send("page d'accueil")
+}
 const signup = (req, res, next) => {
-    // bcrypt.hash(req.body.password, 10)
-    //     .then(hash => {
-    //         const user = new user({
-    //             email: req.body.email,
-    //             password: hash
-    //         });
-    //         user.save()
-    //             .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-    //             .catch(error => res.status(400).json({ error }));
-    //     })
-    //     .catch(err => res.status(500).json({ err }));
-    res.send('page signup');
+    // Defined the models Users
+const Users = sequelize.define('Users', {
+    id_user: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      primaryKey: true, // Définir id_user comme clé primaire
+      autoIncrement: true // Si c'est un identifiant auto-incrémenté
+    },
+    username: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    email: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    password: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    image_profil: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    admin: {
+      type: Sequelize.INTEGER,
+      allowNull: false
+    }
+  }, {
+    tableName: 'users',
+    timestamps: false
+  });
+    console.log("req.body");
+    console.log(req.body);
+    console.log(usersData)
+    usersData.push(req.body)
+    console.log(usersData)
+    //Insert the datas's JSON
+    Users.bulkCreate(usersData, {ignoreDuplicates: true})
+    console.log("Données JSON insérées dans la BDD");
+    console.log('ok');
+    
+    // try{
+    //     bcrypt.hash(req.body.password, 10)
+    //         .then(hash => {
+    //             // const user = new sequelize({
+    //             //     username: req.body.username,
+    //             //     email: req.body.email,
+    //             //     password: hash,
+    //             //     image_profil: req.body.email,
+    //             //     admin: req.body.admin,
+    //             // });
+
+    //             usersData.push(req.body)
+    //         })
+    // }catch(err){
+    //     err => res.status(500).json({ err })
+    // }
+    
 };
 
 const login = (req, res, next) => {
@@ -56,13 +111,16 @@ const test = (req, res, next) => {
         console.log("authentifié");
         console.log(req.body);
         
-        usersData.push(req.body)    
+        usersData.push(req.body)
         res.status(200).json(usersData)
         // res.status(200).send("Envoie à la BDD réussi")
     }catch(err){
         res.status(500).send("Erreur 500 avec sebi", err)
     }
 };
+const signup_user = (req, res, next) =>{
+
+}
 
 const api_users = async (req, res, next) => {
     // Defined the models Users
@@ -107,4 +165,4 @@ const Users = sequelize.define('Users', {
     }
 };
 
-module.exports = { signup, login, getAllUsers, test, api_users }
+module.exports = { signup, login, getAllUsers, test, api_users, home }

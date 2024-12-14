@@ -7,6 +7,7 @@ router.post('/login', userCtrl.login);
 router.get('/users', userCtrl.getAllUsers);
 router.get('/test', userCtrl.test);
 router.get('/api_users', userCtrl.api_users);
+router.get('/', userCtrl.home);
 
 
 module.exports = router;
