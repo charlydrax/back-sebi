@@ -6,7 +6,6 @@ const { Sequelize } = require('sequelize');
 const express = require('express');
 const router = require('./routes/users');
 const sequelize = require('./models');
-const usersData = require('../api-users.json');
 const { log } = require('console');
 const bodyParser = require('body-parser');
 // const router = require('./routes/users');
@@ -15,6 +14,8 @@ app.use(router)
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 
+
+const usersData = [];
 
 // Defined the models Users
 const Users = sequelize.define('Users', {

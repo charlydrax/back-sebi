@@ -1,82 +1,62 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sequelize = require('../models');
-const usersData = require('../../api-users.json')
+// const usersData = require('../../api-users.json')
 const { Sequelize } = require('sequelize');
-const fs = require('fs')
-const path = require('path');
-const { log } = require('console');
-const filePath = path.resolve('api-users.json');
+const {usersData} = require('../server')
+const {Users} = require('../models/user_model'); // Import du modèle User
+
 
 const home = (req, res, next) => {
 
     res.status(200).send("page d'accueil")
 }
-const signup = (req, res, next) => {
-    // Defined the models Users
-const Users = sequelize.define('Users', {
-    id_user: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-      primaryKey: true, // Définir id_user comme clé primaire
-      autoIncrement: true // Si c'est un identifiant auto-incrémenté
-    },
-    username: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    email: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    password: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    image_profil: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    admin: {
-      type: Sequelize.INTEGER,
-      allowNull: false
-    }
-  }, {
-    tableName: 'users',
-    timestamps: false
-  });
-    console.log("req.body");
-    console.log(req.body);
-    console.log(usersData)
-    usersData.push(req.body)
-    console.log(usersData)
-    //Insert the datas's JSON
-    Users.bulkCreate(usersData, {ignoreDuplicates: true})
-    console.log("Données JSON insérées dans la BDD");
-    console.log('ok');
-    
-    // try{
-    //     bcrypt.hash(req.body.password, 10)
-    //         .then(hash => {
-    //             // const user = new sequelize({
-    //             //     username: req.body.username,
-    //             //     email: req.body.email,
-    //             //     password: hash,
-    //             //     image_profil: req.body.email,
-    //             //     admin: req.body.admin,
-    //             // });
+const create_test = (req, res, next) =>{
+  console.log("compte crée");
 
-    //             usersData.push(req.body)
-    //         })
-    // }catch(err){
-    //     err => res.status(500).json({ err })
-    // }
+  res.json({message: "salut"})
+  
+}
+const signup = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    
+    // Hachage du mot de passe
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    // Création de l'utilisateur dans la base de données
+    const newUser = await Users.create({
+        username: req.body.username,
+        email: req.body.email,
+        password: hashedPassword,
+        image_profil: req.body.image_profil, // Vous pouvez ajuster selon votre formulaire
+        admin: req.body.admin,
+        token: ""
+    });
+
+    console.log('Utilisateur créé avec succès :', newUser);
+    res.status(201).json({ message: 'Utilisateur créé avec succès', user: newUser });
+} catch (error) {
+    console.error('Erreur lors de l\'inscription :', error);
+    res.status(500).json({ error: 'Erreur lors de l\'inscription' });
+}
     
 };
 
 const login = (req, res, next) => {
-    user.findOne({ email: req.body.email })
+  console.log("req.body.email");
+  console.log(req.body.email);
+  
+    Users.findOne({ email: req.body.email })
         .then(user => {
+            console.log(user.username);
+            if(user.email !== req.body.email){
+              console.log(user.email);
+              console.log(req.body.username);
+              
+              res.status(403).send("champs invalid")
+            }
+          
             if (!user) {
                 return res.status(401).json({ error: 'Utilisateur non trouvé !' });
             }
@@ -85,13 +65,15 @@ const login = (req, res, next) => {
                     if (!valid) {
                         return res.status(401).json({ error: 'Mot de passe incorrect !' });
                     }
+                    const token = jwt.sign({ userId: user._id },'RANDOM_TOKEN_SECRET',{ expiresIn: '24h' })
+                      
+                    const updateUser = user.update({
+                      token: token,
+                  });
                     res.status(200).json({
                         userId: user._id,
-                        token: jwt.sign(
-                            { userId: user._id },
-                            'RANDOM_TOKEN_SECRET',
-                            { expiresIn: '24h' }
-                        )
+                        token: token,
+                        user: updateUser
                     });
                 })
                 .catch(error => res.status(500).json({ error }));
@@ -165,4 +147,4 @@ const Users = sequelize.define('Users', {
     }
 };
 
-module.exports = { signup, login, getAllUsers, test, api_users, home }
+module.exports = { signup, login, getAllUsers, test, api_users, home, create_test }
