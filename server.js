@@ -1,4 +1,3 @@
-const http = require('http');
 const app = require('./app');
 const port = 8080;
 const hostname = '127.0.0.1'
@@ -6,13 +5,12 @@ const { Sequelize } = require('sequelize');
 const express = require('express');
 const router = require('./routes/users');
 const sequelize = require('./models');
-const { log } = require('console');
 const bodyParser = require('body-parser');
-// const router = require('./routes/users');
+
 app.use(express.json())
-app.use(router)
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
+app.use(router)
 
 
 const usersData = [];

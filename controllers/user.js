@@ -11,18 +11,17 @@ const home = (req, res, next) => {
 
     res.status(200).send("page d'accueil")
 }
-const create_test = (req, res, next) =>{
-  console.log("compte crée");
 
-  res.json({message: "salut"})
-  
-}
 const signup = async (req, res, next) => {
   try {
-    console.log(req.body);
-    
+    // verification of email existing
+    const existingUser = await Users.findOne({ where: { email: req.body.email } });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+    }
     // Hachage du mot de passe
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const hashedPassword = await bcrypt.hash(req.body.mdp, 10);
 
     // Création de l'utilisateur dans la base de données
     const newUser = await Users.create({
@@ -44,19 +43,13 @@ const signup = async (req, res, next) => {
 };
 
 const login = (req, res, next) => {
-  console.log("req.body.email");
-  console.log(req.body.email);
   
-    Users.findOne({ email: req.body.email })
+    Users.findOne({ where: { email: req.body.email}  })
         .then(user => {
-            console.log(user.username);
             if(user.email !== req.body.email){
-              console.log(user.email);
-              console.log(req.body.username);
-              
               res.status(403).send("champs invalid")
             }
-          
+              
             if (!user) {
                 return res.status(401).json({ error: 'Utilisateur non trouvé !' });
             }
@@ -81,28 +74,14 @@ const login = (req, res, next) => {
         .catch(error => res.status(500).json({ error }));
  };
 
+const logout = (req, res, next) =>{
+  console.log(req.userId);
+  
+  res.send()
+}
 const getAllUsers = (req, res, next) => {
     res.send('salut')
 };
-
-const test = (req, res, next) => {
-    try{
-        sequelize.authenticate();   
-        console.log('Connecté à la base de données MySQL!');
-        // console.log(sequelize.query);
-        console.log("authentifié");
-        console.log(req.body);
-        
-        usersData.push(req.body)
-        res.status(200).json(usersData)
-        // res.status(200).send("Envoie à la BDD réussi")
-    }catch(err){
-        res.status(500).send("Erreur 500 avec sebi", err)
-    }
-};
-const signup_user = (req, res, next) =>{
-
-}
 
 const api_users = async (req, res, next) => {
     // Defined the models Users
@@ -147,4 +126,4 @@ const Users = sequelize.define('Users', {
     }
 };
 
-module.exports = { signup, login, getAllUsers, test, api_users, home, create_test }
+module.exports = { signup, login, getAllUsers, api_users, home, logout }
