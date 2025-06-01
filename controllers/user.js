@@ -14,32 +14,48 @@ const home = (req, res, next) => {
 
 const signup = async (req, res, next) => {
   try {
+    console.log('Request body:', req.body); // Debug log
+
+    if (!req.body.password || !req.body.email || !req.body.username) {
+      return res.status(400).json({ error: 'Tous les champs sont requis' });
+    }
+
     // verification of email existing
     const existingUser = await Users.findOne({ where: { email: req.body.email } });
 
     if (existingUser) {
       return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
     }
-    // Hachage du mot de passe
-    const hashedPassword = await bcrypt.hash(req.body.mdp, 10);
+
+    // Hachage du mot de passe - changed from req.body.mdp to req.body.password
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
     // Création de l'utilisateur dans la base de données
     const newUser = await Users.create({
         username: req.body.username,
         email: req.body.email,
         password: hashedPassword,
-        image_profil: req.body.image_profil, // Vous pouvez ajuster selon votre formulaire
-        admin: req.body.admin,
+        image_profil: '/default.jpg', // Default value
+        admin: 0, // Default value
         token: ""
     });
 
     console.log('Utilisateur créé avec succès :', newUser);
-    res.status(201).json({ message: 'Utilisateur créé avec succès', user: newUser });
-} catch (error) {
-    console.error('Erreur lors de l\'inscription :', error);
-    res.status(500).json({ error: 'Erreur lors de l\'inscription' });
-}
-    
+    res.status(201).json({ 
+        message: 'Utilisateur créé avec succès',
+        user: {
+            id: newUser.id_user,
+            username: newUser.username,
+            email: newUser.email
+        }
+    });
+  } catch (error) {
+    console.error('Erreur détaillée:', error);
+    res.status(500).json({ 
+        error: 'Erreur lors de l\'inscription',
+        details: error.message 
+    });
+  }
 };
 
 const login = (req, res, next) => {
